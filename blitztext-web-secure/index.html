@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.openai.com; media-src 'self' blob:; script-src 'self'">
+  <title>Blitztext Web</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #1a1a1a;
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background: #242424;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 28px 32px;
+      width: 460px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    h1 {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      color: #fff;
+    }
+
+    label {
+      font-size: 12px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+button {
+      background: #2e2e2e;
+      border: 1px solid #3a3a3a;
+      border-radius: 6px;
+      color: #e0e0e0;
+      padding: 8px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+
+    button:hover:not(:disabled) { background: #383838; }
+    button:disabled { opacity: 0.4; cursor: default; }
+
+    #recordBtn {
+      width: 100%;
+      padding: 12px;
+      font-size: 15px;
+      font-weight: 500;
+      background: #2a2a2a;
+      border-color: #444;
+    }
+
+    #recordBtn.recording {
+      background: #3a1a1a;
+      border-color: #c0392b;
+      color: #e74c3c;
+    }
+
+    /* Waveform */
+    #waveform {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 3px;
+      height: 44px;
+    }
+
+    .bar {
+      width: 4px;
+      background: #555;
+      border-radius: 2px;
+      height: 4px;
+      transition: height 0.05s ease;
+    }
+
+    #recordBtn.recording ~ * .bar,
+    .recording-active .bar {
+      background: #e74c3c;
+    }
+
+    /* Ergebnis */
+    textarea {
+      background: #1a1a1a;
+      border: 1px solid #3a3a3a;
+      border-radius: 6px;
+      color: #e0e0e0;
+      padding: 10px 12px;
+      font-size: 14px;
+      line-height: 1.5;
+      resize: vertical;
+      min-height: 100px;
+      width: 100%;
+      outline: none;
+    }
+
+    textarea:focus { border-color: #555; }
+
+    .result-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    #copyBtn { align-self: flex-start; }
+
+    /* Hotkey-Zeile */
+    .hotkey-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #hotkeyLabel {
+      flex: 1;
+      background: #1a1a1a;
+      border: 1px solid #3a3a3a;
+      border-radius: 6px;
+      padding: 7px 12px;
+      font-size: 13px;
+      color: #ccc;
+      font-family: monospace;
+    }
+
+    /* Status */
+    .status { font-size: 12px; min-height: 16px; }
+    .status.ok    { color: #27ae60; }
+    .status.error { color: #e74c3c; }
+    .status.info  { color: #888; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>⚡ Blitztext Web</h1>
+
+    <div>
+      <label>Hotkey (halten zum Aufnehmen)</label>
+      <div class="hotkey-row">
+        <span id="hotkeyLabel"></span>
+        <button id="changeHotkey">Ändern</button>
+      </div>
+    </div>
+
+    <button id="recordBtn">● Aufnehmen</button>
+
+    <div id="waveform">
+      <!-- 18 Balken für die Waveform-Animation -->
+      <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+      <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+      <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+      <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+      <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+      <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+    </div>
+
+    <p id="status" class="status"></p>
+
+    <div class="result-row">
+      <label for="result">Transkription</label>
+      <textarea id="result" readonly placeholder="Ergebnis erscheint hier…"></textarea>
+      <button id="copyBtn" disabled>📋 Kopieren</button>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
